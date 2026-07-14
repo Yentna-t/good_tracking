@@ -1,7 +1,7 @@
 # Health Profile API
 
-FastAPI backend for storing and retrieving the current Health Profile. Storage is
-in memory, so the profile is cleared whenever the server restarts.
+FastAPI backend for storing and retrieving the current Health Profile. The profile
+is persisted in a local SQLite database and remains available after server restarts.
 
 ## Setup
 
@@ -20,6 +20,10 @@ uvicorn app.main:app --reload
 
 The API is available at `http://localhost:8000` and its interactive documentation
 is available at `http://localhost:8000/docs`.
+
+By default, the SQLite database is created at `backend/data/profile.db`. Set the
+`PROFILE_DB_PATH` environment variable before starting the server to use another
+location.
 
 ## Test
 
