@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -7,11 +8,11 @@ from app.schemas.profile import HealthProfile
 
 
 router = APIRouter(prefix="/api/profile", tags=["profile"])
-_profile_repository = ProfileRepository()
 
 
+@lru_cache
 def get_profile_repository() -> ProfileRepository:
-    return _profile_repository
+    return ProfileRepository()
 
 
 Repository = Annotated[ProfileRepository, Depends(get_profile_repository)]

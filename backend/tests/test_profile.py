@@ -1,7 +1,11 @@
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+
+from app.repositories.profile_repository import ProfileRepository
+from app.schemas.profile import HealthProfile
 
 
 def test_missing_profile_returns_404(client: TestClient) -> None:
@@ -27,6 +31,17 @@ def test_retrieve_saved_profile(
 
     assert response.status_code == 200
     assert response.json() == valid_profile
+
+
+def test_profile_persists_when_repository_is_recreated(
+    database_path: Path, valid_profile: dict[str, object]
+) -> None:
+    first_repository = ProfileRepository(database_path)
+    first_repository.save(HealthProfile.model_validate(valid_profile))
+
+    reopened_repository = ProfileRepository(database_path)
+
+    assert reopened_repository.get() == HealthProfile.model_validate(valid_profile)
 
 
 def test_put_replaces_entire_profile(

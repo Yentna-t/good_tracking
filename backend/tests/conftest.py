@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -7,8 +9,13 @@ from app.routers.profile import get_profile_repository
 
 
 @pytest.fixture
-def repository() -> ProfileRepository:
-    return ProfileRepository()
+def database_path(tmp_path: Path) -> Path:
+    return tmp_path / "profile.db"
+
+
+@pytest.fixture
+def repository(database_path: Path) -> ProfileRepository:
+    return ProfileRepository(database_path)
 
 
 @pytest.fixture
