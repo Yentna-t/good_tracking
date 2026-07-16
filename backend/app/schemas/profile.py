@@ -10,6 +10,12 @@ HealthGoal = Literal[
     "gain_muscle",
 ]
 
+Gender = Literal[
+    "male",
+    "female",
+    "other",
+]
+
 ActivityLevel = Literal[
     "sedentary",
     "light",
@@ -30,6 +36,7 @@ DietType = Literal[
 
 class HealthProfile(BaseModel):
     age: int = Field(ge=13, le=100)
+    gender: Gender
     height_cm: float = Field(ge=100, le=250)
     weight_kg: float = Field(ge=30, le=300)
     goal: HealthGoal

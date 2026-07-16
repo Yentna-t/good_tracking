@@ -30,6 +30,7 @@ class ProfileRepository:
                 CREATE TABLE IF NOT EXISTS profile (
                     id INTEGER PRIMARY KEY CHECK (id = 1),
                     age INTEGER NOT NULL,
+                    gender TEXT NOT NULL DEFAULT 'other',
                     height_cm REAL NOT NULL,
                     weight_kg REAL NOT NULL,
                     goal TEXT NOT NULL,
@@ -40,12 +41,20 @@ class ProfileRepository:
                 )
                 """
             )
+            columns = {
+                row["name"]
+                for row in connection.execute("PRAGMA table_info(profile)")
+            }
+            if "gender" not in columns:
+                connection.execute(
+                    "ALTER TABLE profile ADD COLUMN gender TEXT NOT NULL DEFAULT 'other'"
+                )
 
     def get(self) -> HealthProfile | None:
         with self._connect() as connection:
             row = connection.execute(
                 """
-                SELECT age, height_cm, weight_kg, goal, activity_level,
+                SELECT age, gender, height_cm, weight_kg, goal, activity_level,
                        diet_type, allergies, avoided_foods
                 FROM profile
                 WHERE id = 1
@@ -57,6 +66,7 @@ class ProfileRepository:
 
         return HealthProfile(
             age=row["age"],
+            gender=row["gender"],
             height_cm=row["height_cm"],
             weight_kg=row["weight_kg"],
             goal=row["goal"],
@@ -71,12 +81,13 @@ class ProfileRepository:
             connection.execute(
                 """
                 INSERT INTO profile (
-                    id, age, height_cm, weight_kg, goal, activity_level,
+                    id, age, gender, height_cm, weight_kg, goal, activity_level,
                     diet_type, allergies, avoided_foods
                 )
-                VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(id) DO UPDATE SET
                     age = excluded.age,
+                    gender = excluded.gender,
                     height_cm = excluded.height_cm,
                     weight_kg = excluded.weight_kg,
                     goal = excluded.goal,
@@ -87,6 +98,7 @@ class ProfileRepository:
                 """,
                 (
                     profile.age,
+                    profile.gender,
                     profile.height_cm,
                     profile.weight_kg,
                     profile.goal,
