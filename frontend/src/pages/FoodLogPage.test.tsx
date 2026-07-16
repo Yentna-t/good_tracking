@@ -39,6 +39,8 @@ describe("FoodLogPage", () => {
     expect(await screen.findByText("Oatmeal")).toBeInTheDocument();
     expect(screen.getByText("Breakfast / มื้อเช้า")).toBeInTheDocument();
     expect(screen.getByText("Dinner / มื้อเย็น")).toBeInTheDocument();
+    expect(screen.getByText("🌅")).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByText("🌙")).toHaveAttribute("aria-hidden", "true");
     expect(screen.getByText(/300 kcal today/)).toBeInTheDocument();
   });
 });

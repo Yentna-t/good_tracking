@@ -22,5 +22,7 @@ describe("AIInsightPage", () => {
     expect(await screen.findByText("Protein ยังไม่ถึงเป้า / Protein gap")).toBeInTheDocument();
     expect(screen.getByText(/มื้อถัดไปเพิ่มโปรตีน/)).toBeInTheDocument();
     expect(screen.getByText(/does not diagnose disease/i)).toBeInTheDocument();
+    expect(screen.getByText("✨")).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByText("⚠️")).toHaveAttribute("aria-hidden", "true");
   });
 });

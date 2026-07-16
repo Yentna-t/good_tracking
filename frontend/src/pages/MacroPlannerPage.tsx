@@ -1,5 +1,6 @@
 import { Calculator, Check, Download, LoaderCircle, ShoppingBasket, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { EmojiCue } from "../components/EmojiCue";
 import { getMacroPlan, mealLabels, saveMacroPlan } from "../lib/featureApi";
 import type { MacroPlan, MealDistribution } from "../types/feature";
 
@@ -8,6 +9,7 @@ const macroColors = {
   carbs_g: "#e39b32",
   fat_g: "#6574cd",
 } as const;
+const mealEmoji: Record<MealDistribution["meal"], string> = { breakfast: "🌅", lunch: "☀️", dinner: "🌙", snacks: "🍎" };
 
 export function MacroPlannerPage() {
   const [plan, setPlan] = useState<MacroPlan | null>(null);
@@ -125,11 +127,11 @@ export function MacroPlannerPage() {
   const percentTotal = plan.targets.protein_percent + plan.targets.carbs_percent + plan.targets.fat_percent;
 
   return (
-    <div className="page-width">
+    <div className="page-width wellness-page macro-planner-page">
       <div className="page-heading">
         <div>
-          <span className="eyebrow">MACRO PLANNER MVP</span>
-          <h1>Plan your nutrition</h1>
+          <span className="eyebrow">YOUR NUTRITION PLAN</span>
+          <h1 className="emoji-label"><EmojiCue symbol="🎯" /><span>Plan your nutrition</span></h1>
           <p>ตั้ง calorie target, macro split และแผนกระจายแต่ละมื้อแบบใช้งานได้จริง</p>
         </div>
         <div className="heading-badge">
@@ -144,7 +146,7 @@ export function MacroPlannerPage() {
               <Calculator size={15} />
             </div>
             <div>
-              <h2>Daily targets</h2>
+              <h2 className="emoji-label"><EmojiCue symbol="🎯" variant="section" /><span>Daily targets</span></h2>
               <p>4/4/9 rule: Protein 4 kcal/g • Carbs 4 kcal/g • Fat 9 kcal/g</p>
             </div>
           </div>
@@ -152,12 +154,14 @@ export function MacroPlannerPage() {
           <div className="form-grid four-columns">
             <TargetField
               label="Calories"
+              emoji="🔥"
               value={plan.targets.calories}
               unit="kcal"
               onChange={(value) => updateTargets({ calories: value }, { recomputeFromCalories: true })}
             />
             <TargetField
               label="Protein"
+              emoji="🥩"
               value={plan.targets.protein_g}
               unit="g"
               color={macroColors.protein_g}
@@ -165,6 +169,7 @@ export function MacroPlannerPage() {
             />
             <TargetField
               label="Carbs"
+              emoji="🌾"
               value={plan.targets.carbs_g}
               unit="g"
               color={macroColors.carbs_g}
@@ -172,6 +177,7 @@ export function MacroPlannerPage() {
             />
             <TargetField
               label="Fat"
+              emoji="🥑"
               value={plan.targets.fat_g}
               unit="g"
               color={macroColors.fat_g}
@@ -207,7 +213,7 @@ export function MacroPlannerPage() {
               <Calculator size={15} />
             </div>
             <div>
-              <h2>Meal distribution</h2>
+              <h2 className="emoji-label"><EmojiCue symbol="🍽️" variant="section" /><span>Meal distribution</span></h2>
               <p>แบ่งเป้าหมายเป็น 4 มื้อ: breakfast, lunch, dinner, snacks</p>
             </div>
           </div>
@@ -224,14 +230,14 @@ export function MacroPlannerPage() {
             <Sparkles size={15} />
           </div>
           <div>
-            <h2>Suggested menu ideas</h2>
+            <h2 className="emoji-label"><EmojiCue symbol="💡" variant="section" /><span>Suggested menu ideas</span></h2>
             <p>เมนูตัวอย่างเพื่อช่วยให้ถึงเป้า ไม่ใช่คำแนะนำทางการแพทย์</p>
           </div>
         </div>
 
         <div className="dashboard-grid">
           {plan.suggestions.map((suggestion) => (
-            <article key={suggestion.id} style={{ padding: 15, border: "1px solid #e5e9ef", borderRadius: 8 }}>
+            <article className="menu-suggestion" key={suggestion.id} style={{ padding: 15, border: "1px solid #e5e9ef", borderRadius: 8 }}>
               <span className="eyebrow">{mealLabels[suggestion.meal]}</span>
               <h3 style={{ margin: "8px 0 5px", fontSize: 14 }}>{suggestion.name}</h3>
               <p style={{ margin: 0, color: "#687284", fontSize: 11 }}>{suggestion.description}</p>
@@ -249,7 +255,7 @@ export function MacroPlannerPage() {
             <ShoppingBasket size={15} />
           </div>
           <div>
-            <h2>Shopping list</h2>
+            <h2 className="emoji-label"><EmojiCue symbol="🛒" variant="section" /><span>Shopping list</span></h2>
             <p>กด export ได้ทันทีจากเมนูตัวอย่าง</p>
           </div>
           <button
@@ -275,12 +281,14 @@ export function MacroPlannerPage() {
 
 function TargetField({
   label,
+  emoji,
   value,
   unit,
   color,
   onChange,
 }: {
   label: string;
+  emoji: string;
   value: number;
   unit: string;
   color?: string;
@@ -289,7 +297,7 @@ function TargetField({
   return (
     <label>
       <span className="field-label">
-        {label} ({unit})
+        <EmojiCue symbol={emoji} /><span>{label} ({unit})</span>
       </span>
       <input
         className="text-input"
@@ -314,7 +322,7 @@ function DistributionRow({
 }) {
   return (
     <div style={{ padding: "11px 0", borderTop: "1px solid #eef1ee" }}>
-      <strong style={{ display: "block", fontSize: 12, marginBottom: 8 }}>{mealLabels[meal.meal]}</strong>
+      <strong className="emoji-label" style={{ fontSize: 12, marginBottom: 8 }}><EmojiCue symbol={mealEmoji[meal.meal]} /><span>{mealLabels[meal.meal]}</span></strong>
       <div className="form-grid four-columns">
         <SmallNumber label="kcal" value={meal.calories} onChange={(value) => onChange(index, "calories", value)} />
         <SmallNumber label="Protein g" value={meal.protein_g} onChange={(value) => onChange(index, "protein_g", value)} />

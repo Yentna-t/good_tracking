@@ -1,5 +1,6 @@
 import { BookOpen, LoaderCircle, Save, Sparkles } from "lucide-react";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { EmojiCue } from "../components/EmojiCue";
 import { getHealthDiary, getHealthDiaryHistory, saveHealthDiary } from "../lib/featureApi";
 import type { HealthDiaryEntry, HealthDiaryInput, Level, Mood } from "../types/feature";
 
@@ -101,15 +102,15 @@ export function HealthDiaryPage() {
   }
 
   return (
-    <div className="page-width">
+    <div className="page-width wellness-page health-diary-page">
       <div className="page-heading">
         <div>
-          <span className="eyebrow">HEALTH DIARY MVP</span>
-          <h1>Daily check-in</h1>
+          <span className="eyebrow">DAILY WELLBEING</span>
+          <h1 className="emoji-label"><EmojiCue symbol="🌿" /><span>Daily check-in</span></h1>
           <p>ติดตามน้ำหนัก การนอน น้ำ อารมณ์ ความหิว พลังงาน ความเครียด และอาการรายวัน</p>
         </div>
         <div className="heading-badge">
-          <Sparkles size={15} /> Private daily notes
+          <Sparkles size={15} /> Your private space
         </div>
       </div>
 
@@ -121,7 +122,7 @@ export function HealthDiaryPage() {
                 <BookOpen size={15} />
               </div>
               <div>
-                <h2>วันนี้เป็นอย่างไรบ้าง? / How are you today?</h2>
+                <h2 className="emoji-label"><EmojiCue symbol="🌿" /><span>วันนี้เป็นอย่างไรบ้าง? / How are you today?</span></h2>
                 <p>ช่องที่ไม่สะดวกกรอกสามารถเว้นได้</p>
               </div>
             </div>
@@ -141,18 +142,21 @@ export function HealthDiaryPage() {
               <NumberField
                 id="diary-weight"
                 label="Weight (kg)"
+                emoji="⚖️"
                 value={form.weight_kg}
                 onChange={(value) => update("weight_kg", value)}
               />
               <NumberField
                 id="diary-sleep"
                 label="Sleep (hours)"
+                emoji="😴"
                 value={form.sleep_hours}
                 onChange={(value) => update("sleep_hours", value)}
               />
               <NumberField
                 id="diary-water"
                 label="Water (liters)"
+                emoji="💧"
                 value={form.water_liters}
                 onChange={(value) => update("water_liters", value)}
               />
@@ -160,6 +164,7 @@ export function HealthDiaryPage() {
 
             <Choice
               label="Mood / อารมณ์"
+              emoji="🙂"
               value={form.mood}
               options={moods.map((value) => [value, moodLabels[value]])}
               onChange={(value) => update("mood", value as Mood)}
@@ -168,18 +173,21 @@ export function HealthDiaryPage() {
             <div className="form-grid three-columns">
               <Choice
                 label="Hunger / ความหิว"
+                emoji="🍽️"
                 value={form.hunger}
                 options={levels.map((value) => [value, levelLabels[value]])}
                 onChange={(value) => update("hunger", value as Level)}
               />
               <Choice
                 label="Energy / พลังงาน"
+                emoji="⚡"
                 value={form.energy}
                 options={levels.map((value) => [value, levelLabels[value]])}
                 onChange={(value) => update("energy", value as Level)}
               />
               <Choice
                 label="Stress / ความเครียด"
+                emoji="🧘"
                 value={form.stress}
                 options={levels.map((value) => [value, levelLabels[value]])}
                 onChange={(value) => update("stress", value as Level)}
@@ -271,21 +279,24 @@ export function HealthDiaryPage() {
 function NumberField({
   id,
   label,
+  emoji,
   value,
   onChange,
 }: {
   id: string;
   label: string;
+  emoji: string;
   value?: number;
   onChange: (value: number | undefined) => void;
 }) {
   return (
     <div>
       <label className="field-label" htmlFor={id}>
-        {label}
+        <EmojiCue symbol={emoji} /><span>{label}</span>
       </label>
       <input
         id={id}
+        aria-label={label}
         className="text-input"
         type="number"
         min="0"
@@ -299,18 +310,20 @@ function NumberField({
 
 function Choice({
   label,
+  emoji,
   value,
   options,
   onChange,
 }: {
   label: string;
+  emoji: string;
   value?: string;
   options: [string, string][];
   onChange: (value: string) => void;
 }) {
   return (
     <fieldset style={{ border: 0, padding: 0, margin: "18px 0 0" }}>
-      <legend className="field-label">{label}</legend>
+      <legend className="field-label"><EmojiCue symbol={emoji} /><span>{label}</span></legend>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
         {options.map(([option, text]) => (
           <label

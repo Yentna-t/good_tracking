@@ -12,6 +12,8 @@ describe("ProfilePage", () => {
     render(<MemoryRouter><ProfilePage /></MemoryRouter>);
     expect(await screen.findByRole("heading", { name: /set up your health profile/i })).toBeInTheDocument();
     expect(screen.getByLabelText("Age")).toHaveValue(null);
+    expect(screen.getByText("👤")).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByText("🎯")).toHaveAttribute("aria-hidden", "true");
   });
   it("loads an existing profile into the form", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify(profile), { status: 200 }));

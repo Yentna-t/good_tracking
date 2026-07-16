@@ -30,5 +30,7 @@ describe("MacroPlannerPage", () => {
     expect(screen.getByText(/Protein 4 kcal\/g/)).toBeInTheDocument();
     expect(screen.getByText("Breakfast / มื้อเช้า")).toBeInTheDocument();
     expect(screen.getByText("Shopping list")).toBeInTheDocument();
+    expect(screen.getAllByText("🎯")[0]).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByText("🛒")).toHaveAttribute("aria-hidden", "true");
   });
 });

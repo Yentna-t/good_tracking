@@ -15,6 +15,8 @@ describe("HealthDiaryPage", () => {
     expect(await screen.findByText("วันนี้เป็นอย่างไรบ้าง? / How are you today?")).toBeInTheDocument();
     expect(screen.getByLabelText("Weight (kg)")).toBeInTheDocument();
     expect(screen.getByLabelText("Sleep (hours)")).toBeInTheDocument();
+    expect(screen.getByText("😴")).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByText("💧")).toHaveAttribute("aria-hidden", "true");
     expect(screen.getByLabelText("Notes / บันทึกเพิ่มเติม")).toBeInTheDocument();
   });
 });
