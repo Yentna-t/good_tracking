@@ -60,6 +60,7 @@ http://localhost:5173
 ```json
 {
   "age": 22,
+  "gender": "male",
   "height_cm": 170,
   "weight_kg": 72.5,
   "goal": "lose_weight",
@@ -83,6 +84,7 @@ http://localhost:5173
 | Field            | Type             | Required | Description                  |
 | ---------------- | ---------------- | -------: | ---------------------------- |
 | `age`            | Integer          |      Yes | อายุของผู้ใช้                |
+| `gender`         | String           |      Yes | เพศของผู้ใช้                 |
 | `height_cm`      | Number           |      Yes | ส่วนสูงหน่วยเซนติเมตร        |
 | `weight_kg`      | Number           |      Yes | น้ำหนักหน่วยกิโลกรัม         |
 | `goal`           | String           |      Yes | เป้าหมายสุขภาพ               |
@@ -241,6 +243,7 @@ Body:
 ```json
 {
   "age": 22,
+  "gender": "male",
   "height_cm": 170,
   "weight_kg": 72.5,
   "goal": "lose_weight",
@@ -330,6 +333,7 @@ Body:
 ```json
 {
   "age": 22,
+  "gender": "male",
   "height_cm": 170,
   "weight_kg": 72.5,
   "goal": "lose_weight",
@@ -361,6 +365,7 @@ Body:
 ```json
 {
   "age": 22,
+  "gender": "male",
   "height_cm": 170,
   "weight_kg": 72.5,
   "goal": "lose_weight",
@@ -431,6 +436,7 @@ Request:
 ```json
 {
   "age": 22,
+  "gender": "male",
   "height_cm": 170,
   "weight_kg": 72.5,
   "goal": "be_healthy",
@@ -462,6 +468,8 @@ export type HealthGoal =
   | "gain_weight"
   | "gain_muscle";
 
+export type Gender = "male" | "female" | "other";
+
 export type ActivityLevel =
   | "sedentary"
   | "light"
@@ -479,6 +487,7 @@ export type DietType =
 
 export interface HealthProfile {
   age: number;
+  gender: Gender;
   height_cm: number;
   weight_kg: number;
   goal: HealthGoal;
@@ -524,6 +533,12 @@ HealthGoal = Literal[
     "gain_muscle",
 ]
 
+Gender = Literal[
+    "male",
+    "female",
+    "other",
+]
+
 ActivityLevel = Literal[
     "sedentary",
     "light",
@@ -544,6 +559,7 @@ DietType = Literal[
 
 class HealthProfile(BaseModel):
     age: int = Field(ge=13, le=100)
+    gender: Gender
     height_cm: float = Field(ge=100, le=250)
     weight_kg: float = Field(ge=30, le=300)
 
@@ -775,3 +791,37 @@ Contract เวอร์ชันนี้ยังไม่รองรับ:
 * [ ] PUT รองรับ `200` และ `422`
 * [ ] Frontend TypeScript type ตรงกับ Pydantic schema
 * [ ] Frontend และ Backend ทดสอบร่วมกันแล้ว
+
+---
+
+# 21. Full MVP Data API
+
+The existing single-user profile endpoints remain unchanged. The following
+snake_case endpoints extend the same SQLite database for the MVP. Dates use
+`YYYY-MM-DD`; all nutrition values are numeric and represent grams unless the
+field name says otherwise.
+
+## Food Log
+
+* `GET /api/food-log?date=YYYY-MM-DD` lists entries for a day (defaults to today).
+* `POST /api/food-log` creates an entry and returns `201` plus its `id` and `created_at`.
+* `PUT /api/food-log/{id}` edits an entry; `DELETE /api/food-log/{id}` removes it.
+* Fields: `entry_date`, `name`, `calories`, `protein`, `carbs`, `fat`, `fiber`, `sugar`, `sodium`, `meal_type` (`breakfast|lunch|dinner|snack`), `serving_size`.
+
+## Health Diary
+
+* `GET /api/diary/{date}` returns one daily entry or `404`.
+* `PUT /api/diary/{date}` creates or replaces the entry. The body `date` must match the path.
+* Fields: `date`, `weight_kg`, `sleep_hours`, `water_litres`, `mood`, `hunger`, `energy_level`, `stress_level`, `exercise_minutes`, `steps`, `symptoms`, `bowel_movement`, `menstrual_cycle`, `medications_supplements`, `notes`.
+
+## Macro, Nutrition, Dashboard and Progress
+
+* `GET /api/nutrition/targets` calculates BMR, TDEE, calorie and macro targets using Mifflin–St Jeor and activity factors. The response contains `is_estimate: true` and an estimate disclaimer.
+* `GET /api/macro-plan` returns the saved plan, or a calculated plan when none has been saved. `PUT /api/macro-plan` saves `calorie_target`, `protein_target`, `carbs_target`, `fat_target`, and `meal_allocations`.
+* `GET /api/dashboard?date=YYYY-MM-DD` returns calorie consumed/burned/remaining, macro progress, water, sleep, weight, steps, exercise and meal summary. Exercise calories are a development estimate of `5 kcal/minute`.
+* `GET /api/progress?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD` returns daily weight, calorie, macro, sleep, water and exercise points. The default range is the last 7 days.
+* `GET /api/insights?date=YYYY-MM-DD` returns rule-based insights based on the profile, food log and diary. It does not call an external AI service and is not medical advice.
+
+All numeric constraints are enforced by Pydantic and invalid requests return
+`422`. The SQLite initialization is additive and preserves legacy profile
+databases; missing legacy `gender` defaults to `other`.

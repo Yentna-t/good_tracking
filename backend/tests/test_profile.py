@@ -1,4 +1,6 @@
 from copy import deepcopy
+import json
+import sqlite3
 from pathlib import Path
 
 import pytest
@@ -44,6 +46,50 @@ def test_profile_persists_when_repository_is_recreated(
     assert reopened_repository.get() == HealthProfile.model_validate(valid_profile)
 
 
+def test_legacy_profile_defaults_gender(
+    database_path: Path, valid_profile: dict[str, object]
+) -> None:
+    with sqlite3.connect(database_path) as connection:
+        connection.execute(
+            """
+            CREATE TABLE profile (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                age INTEGER NOT NULL,
+                height_cm REAL NOT NULL,
+                weight_kg REAL NOT NULL,
+                goal TEXT NOT NULL,
+                activity_level TEXT NOT NULL,
+                diet_type TEXT NOT NULL,
+                allergies TEXT NOT NULL,
+                avoided_foods TEXT NOT NULL
+            )
+            """
+        )
+        connection.execute(
+            """
+            INSERT INTO profile (
+                id, age, height_cm, weight_kg, goal, activity_level,
+                diet_type, allergies, avoided_foods
+            ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                valid_profile["age"],
+                valid_profile["height_cm"],
+                valid_profile["weight_kg"],
+                valid_profile["goal"],
+                valid_profile["activity_level"],
+                valid_profile["diet_type"],
+                json.dumps(valid_profile["allergies"]),
+                json.dumps(valid_profile["avoided_foods"]),
+            ),
+        )
+
+    profile = ProfileRepository(database_path).get()
+
+    assert profile is not None
+    assert profile.gender == "other"
+
+
 def test_put_replaces_entire_profile(
     client: TestClient, valid_profile: dict[str, object]
 ) -> None:
@@ -65,6 +111,7 @@ def test_put_replaces_entire_profile(
     ("field", "invalid_value"),
     [
         ("age", 10),
+        ("gender", "unknown"),
         ("height_cm", 300),
         ("weight_kg", 20),
         ("goal", "be_healthy"),
@@ -122,4 +169,19 @@ def test_cors_allows_frontend_origin(client: TestClient) -> None:
     assert response.status_code == 200
     assert response.headers["access-control-allow-origin"] == (
         "http://localhost:5173"
+    )
+
+
+def test_cors_allows_vite_fallback_port(client: TestClient) -> None:
+    response = client.options(
+        "/api/profile",
+        headers={
+            "Origin": "http://localhost:5174",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == (
+        "http://localhost:5174"
     )

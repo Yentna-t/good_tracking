@@ -30,6 +30,7 @@ def client(repository: ProfileRepository) -> TestClient:
 def valid_profile() -> dict[str, object]:
     return {
         "age": 22,
+        "gender": "male",
         "height_cm": 170,
         "weight_kg": 72.5,
         "goal": "lose_weight",
