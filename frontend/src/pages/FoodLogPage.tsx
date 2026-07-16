@@ -1,9 +1,12 @@
 import { Camera, Check, Edit3, Flame, LoaderCircle, Plus, Trash2, Utensils, X } from "lucide-react";
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { EmojiCue } from "../components/EmojiCue";
 import { addFoodEntry, deleteFoodEntry, getFoodLog, mealLabels, updateFoodEntry } from "../lib/featureApi";
 import type { FoodEntry, FoodEntryInput, FoodLog, MealType, NutritionTotals } from "../types/feature";
 
 const meals: MealType[] = ["breakfast", "lunch", "dinner", "snacks"];
+const mealEmoji: Record<MealType, string> = { breakfast: "🌅", lunch: "☀️", dinner: "🌙", snacks: "🍎" };
+const nutritionEmoji = { Calories: "🔥", Protein: "🥩", Carbs: "🌾", Fat: "🥑" } as const;
 
 const blankEntry = (meal: MealType): FoodEntryInput => ({
   meal,
@@ -144,11 +147,11 @@ export function FoodLogPage() {
   }
 
   return (
-    <div className="page-width">
+    <div className="page-width wellness-page food-log-page">
       <div className="page-heading">
         <div>
-          <span className="eyebrow">FOOD LOG MVP</span>
-          <h1>Food Log</h1>
+          <span className="eyebrow">DAILY NUTRITION</span>
+          <h1 className="emoji-label"><EmojiCue symbol="🥗" /><span>Food Log</span></h1>
           <p>บันทึก Breakfast, Lunch, Dinner, Snacks พร้อมโภชนาการรวมรายวัน</p>
         </div>
         <div className="heading-badge">
@@ -162,15 +165,15 @@ export function FoodLogPage() {
             <Flame size={16} />
           </div>
           <div>
-            <h2>Daily nutrition totals</h2>
+            <h2 className="emoji-label"><EmojiCue symbol="🥗" /><span>Daily nutrition totals</span></h2>
             <p>ภาพสแกนเป็นการประเมินเบื้องต้น / estimate only</p>
           </div>
         </div>
-        <div className="dashboard-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
-          <Metric label="Calories" value={Math.round(totals.calories)} unit="kcal" />
-          <Metric label="Protein" value={Math.round(totals.protein_g)} unit="g" />
-          <Metric label="Carbs" value={Math.round(totals.carbs_g)} unit="g" />
-          <Metric label="Fat" value={Math.round(totals.fat_g)} unit="g" />
+        <div className="dashboard-grid nutrition-grid">
+          <Metric label="Calories" value={Math.round(totals.calories)} unit="kcal" emoji={nutritionEmoji.Calories} />
+          <Metric label="Protein" value={Math.round(totals.protein_g)} unit="g" emoji={nutritionEmoji.Protein} />
+          <Metric label="Carbs" value={Math.round(totals.carbs_g)} unit="g" emoji={nutritionEmoji.Carbs} />
+          <Metric label="Fat" value={Math.round(totals.fat_g)} unit="g" emoji={nutritionEmoji.Fat} />
         </div>
       </section>
 
@@ -213,7 +216,7 @@ export function FoodLogPage() {
               <Utensils size={15} />
             </div>
             <div>
-              <h2>{mealLabels[meal]}</h2>
+              <h2 className="emoji-label"><EmojiCue symbol={mealEmoji[meal]} /><span>{mealLabels[meal]}</span></h2>
               <p>{grouped[meal].length ? `${grouped[meal].length} item(s) logged` : "ยังไม่มีรายการในมื้อนี้"}</p>
             </div>
             <button
@@ -258,7 +261,7 @@ export function FoodLogPage() {
           <div className="card-heading">
             <div className="card-number">{editing ? <Edit3 size={15} /> : <Plus size={15} />}</div>
             <div>
-              <h2>{editing ? "Edit food entry" : "Add food manually"}</h2>
+              <h2 className="emoji-label"><EmojiCue symbol="✍️" /><span>{editing ? "Edit food entry" : "Add food manually"}</span></h2>
               <p>เพิ่มเอง แก้เอง หรือตรวจผลจาก simulated photo scan ก่อนบันทึก</p>
             </div>
             <button
@@ -344,10 +347,10 @@ export function FoodLogPage() {
   );
 }
 
-function Metric({ label, value, unit }: { label: string; value: number; unit: string }) {
+function Metric({ label, value, unit, emoji }: { label: keyof typeof nutritionEmoji; value: number; unit: string; emoji: string }) {
   return (
-    <div style={{ padding: 12, borderRadius: 8, background: "#f4f7f5" }}>
-      <span style={{ display: "block", color: "#687284", fontSize: 11 }}>{label}</span>
+    <div className="nutrition-metric" style={{ padding: 12, borderRadius: 8, background: "#f4f7f5" }}>
+      <span className="emoji-label" style={{ color: "#687284", fontSize: 11 }}><EmojiCue symbol={emoji} /><span>{label}</span></span>
       <strong style={{ display: "block", marginTop: 5, fontSize: 18 }}>
         {value} <small style={{ color: "#687284", fontSize: 10 }}>{unit}</small>
       </strong>
@@ -357,7 +360,7 @@ function Metric({ label, value, unit }: { label: string; value: number; unit: st
 
 function FoodRow({ entry, onEdit, onDelete }: { entry: FoodEntry; onEdit: () => void; onDelete: () => void }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderTop: "1px solid #eef1ee" }}>
+    <div className="food-row" style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderTop: "1px solid #eef1ee" }}>
       <div style={{ minWidth: 0, flex: 1 }}>
         <strong style={{ fontSize: 13 }}>{entry.name}</strong>
         <span style={{ display: "block", color: "#687284", fontSize: 11, marginTop: 3 }}>
